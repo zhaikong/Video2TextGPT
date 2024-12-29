@@ -1,0 +1,21 @@
+videotext_converter/
+├── src/
+│   ├── __init__.py
+│   ├── main.py              # 程序入口
+│   ├── gui/
+│   │   ├── __init__.py 
+│   │   ├── main_window.py   # 主窗口
+│   │   ├── file_list.py     # 文件列表组件
+│   │   ├── progress.py      # 进度展示组件
+│   │   └── status.py        # 状态展示组件
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── converter.py     # 转换核心逻辑
+│   │   ├── extractor.py     # 音频提取
+│   │   └── transcriber.py   # 语音识别
+│   └── utils/
+│       ├── __init__.py
+│       ├── config.py        # 配置管理
+│       └── logger.py        # 日志管理
+├── requirements.txt
+└── README.md 

@@ -1,0 +1,15 @@
+# GUI
+PyQt6>=6.4.0
+
+# 视频处理
+moviepy>=1.0.3
+
+# 语音识别
+openai-whisper>=20231117
+torch>=2.0.0
+numpy>=1.24.0
+torchaudio
+funasr
+
+# 其他工具
+pathlib>=1.0.1 
