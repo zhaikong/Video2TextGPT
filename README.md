@@ -2,6 +2,9 @@
 
 一个基于 PyQt6 的视频转文字工具，支持批量将视频转换为带时间戳的文本文档。
 
+## 界面
+![img.png](img.png)
+
 ## 功能特点
 
 - 支持批量导入视频文件和文件夹
@@ -18,7 +21,7 @@
 项目使用以下关键组件：
 
 - **[Whisper](https://github.com/openai/whisper)** - OpenAI开发的多语言语音识别模型，支持多种语言的转写
-- **[FunASR](https://github.com/alibaba-damo-academy/FunASR)** - 达摩院开源的语音识别模型，专为中文优化
+- **[FunASR](https://github.com/modelscope/FunASR)** - 达摩院开源的语音识别模型，专为中文优化
 - **[MoviePy](https://github.com/Zulko/moviepy)** - 视频处理库，用于提取音频
 - **[PyQt6](https://www.riverbankcomputing.com/software/pyqt/)** - 界面框架
 
@@ -35,9 +38,7 @@ git clone https://github.com/NanmiCoder/Video2TextGPT.git
 cd Video2TextGPT
 ```
 
-
-
-3. 安装 FFmpeg (如果未安装)
+2. 安装 FFmpeg (如果未安装)
 
 Windows:
 ```bash
