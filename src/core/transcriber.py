@@ -3,6 +3,7 @@ import torch
 from typing import Callable
 import warnings
 from abc import ABC, abstractmethod
+from ..utils.config import Config
 
 # 忽略 FutureWarning
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -20,10 +21,13 @@ class BaseTranscriber(ABC):
 
 class WhisperTranscriber(BaseTranscriber):
     def __init__(self):
+        # 获取配置
+        self.config = Config()
         # 检查是否可用GPU
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        # 加载模型(默认使用base模型,可以通过配置修改)
-        self.model = whisper.load_model("medium", device=self.device)
+        # 加载模型(从配置获取)
+        model_name = self.config.get("whisper_model", "medium")
+        self.model = whisper.load_model(model_name, device=self.device)
 
     def transcribe(
         self, audio_path: str, progress_callback: Callable[[int], None] = None
@@ -33,9 +37,12 @@ class WhisperTranscriber(BaseTranscriber):
             if progress_callback:
                 progress_callback(0)
 
+            # 从配置获取语言
+            language = self.config.get("language", "zh")
+            
             result = self.model.transcribe(
                 audio_path,
-                language="zh",
+                language=language,
                 task="transcribe",
                 fp16=False,
                 verbose=True,
@@ -138,9 +145,13 @@ class FunASRTranscriber(BaseTranscriber):
 
 def format_timestamp(seconds: float) -> str:
     """格式化时间戳"""
-    minutes = int(seconds // 60)
-    seconds = seconds % 60
-    return f"{minutes:02d}:{seconds:05.3f}"
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = seconds % 60
+    if hours > 0:
+        return f"{hours:02d}:{minutes:02d}:{secs:05.2f}"
+    else:
+        return f"{minutes:02d}:{secs:05.2f}"
 
 
 def create_transcriber(engine: str = "whisper") -> BaseTranscriber:

@@ -7,6 +7,7 @@ from ..utils.logger import Logger
 import os
 from datetime import datetime
 from pathlib import Path
+from ..utils.config import Config
 
 
 class Converter(QObject):
@@ -22,15 +23,26 @@ class Converter(QObject):
         self.is_running = False
         self.current_task = None
         self.logger = Logger()
+        self.config = Config()
 
         # 从配置获取转写引擎
-        from utils.config import Config
-
-        config = Config()
-        transcriber_engine = config.get("transcriber", "funasr")
-
+        self.transcriber_engine = self.config.get("transcriber", "whisper")
+        
         self.extractor = AudioExtractor()
-        self.transcriber = create_transcriber(transcriber_engine)
+        self.transcriber = create_transcriber(self.transcriber_engine)
+
+    def update_config(self):
+        """更新配置后调用此方法重新加载转写器"""
+        # 重新获取转写引擎配置
+        new_engine = self.config.get("transcriber", "whisper")
+        
+        # 如果转写引擎已改变，则重新创建转写器
+        if new_engine != self.transcriber_engine:
+            self.transcriber_engine = new_engine
+            self.transcriber = create_transcriber(self.transcriber_engine)
+        # 即使引擎没变，也可能有其他配置改变（如whisper_model），所以无论如何都重新创建转写器
+        else:
+            self.transcriber = create_transcriber(self.transcriber_engine)
 
     def add_task(self, file_path):
         """添加转换任务"""
@@ -45,6 +57,16 @@ class Converter(QObject):
     def stop(self):
         """停止处理"""
         self.is_running = False
+
+    def pause(self):
+        """暂停处理"""
+        self.is_running = False
+
+    def resume(self):
+        """恢复处理"""
+        if not self.is_running:
+            self.is_running = True
+            threading.Thread(target=self._process_queue, daemon=True).start()
 
     def _process_queue(self):
         """处理任务队列"""
@@ -112,10 +134,7 @@ class Converter(QObject):
             current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
             # 从配置获取输出目录
-            from utils.config import Config
-
-            config = Config()
-            output_dir = Path(config.get("output_dir"))
+            output_dir = Path(self.config.get("output_dir"))
             output_dir.mkdir(parents=True, exist_ok=True)
 
             # 生成markdown文件路径
@@ -138,11 +157,15 @@ class Converter(QObject):
             pure_text = []
             for line in text.split("\n"):
                 if line.strip():
-                    # 移除时间戳部分 [00:00.000 --> 00:00.000]
+                    # 移除时间戳部分 [00:00:00 --> 00:00:00] 或 [00:00 --> 00:00]
                     if "]" in line:
-                        pure_text.append(line.split("]", 1)[1].strip())
+                        text_part = line.split("]", 1)[1].strip()
+                        pure_text.append(text_part)
                     else:
                         pure_text.append(line.strip())
+
+            # 连接纯文本，使用段落格式（每段之间有空行）
+            pure_text_content = "\n\n".join(pure_text)
 
             # 生成markdown内容
             content = f"""# {video_name_without_ext}
@@ -156,7 +179,7 @@ class Converter(QObject):
 {text}
 
 ## 纯文本版本
-{chr(10).join(pure_text)}
+{pure_text_content}
 """
 
             # 写入文件

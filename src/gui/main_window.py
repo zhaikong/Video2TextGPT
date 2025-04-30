@@ -192,8 +192,16 @@ class MainWindow(QMainWindow):
 
     def select_files(self):
         """选择文件"""
+        # 从配置获取支持的格式
+        formats = self.config.get("supported_formats", [".mp4", ".avi", ".mkv", ".mov", ".flv"])
+        # 构建过滤器字符串
+        filter_str = "视频文件 ("
+        for fmt in formats:
+            filter_str += f"*{fmt} "
+        filter_str = filter_str.strip() + ")"
+        
         files, _ = QFileDialog.getOpenFileNames(
-            self, "选择视频文件", "", "视频文件 (*.mp4 *.avi *.mkv *.mov *.flv)"
+            self, "选择视频文件", "", filter_str
         )
         if files:
             self.handle_dropped_files(files)
@@ -424,6 +432,12 @@ class MainWindow(QMainWindow):
     def show_settings(self):
         """显示设置对话框"""
         dialog = SettingsDialog(self.config, self)
-        if dialog.exec():
-            # 重新加载配置
-            self.converter.reload_config()
+        result = dialog.exec()
+        if result:
+            # 如果用户保存了设置，更新主题
+            self.theme_manager.apply_theme(self.config.get("theme", "light"))
+            # 更新转换器的配置
+            self.converter.update_config()
+            # 更新状态
+            self.status.update_stage(f"设置已更新，转写引擎: {self.config.get('transcriber')}, 模型: {self.config.get('whisper_model')}")
+            self.logger.info("配置已更新")

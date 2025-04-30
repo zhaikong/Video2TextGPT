@@ -4,16 +4,27 @@ from pathlib import Path
 
 
 class Config:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return
+        
         # 默认配置
         self.default_config = {
             "output_dir": str(Path.home() / "Documents" / "VideoText"),
-            "whisper_model": "base",
+            "whisper_model": "large",
             "language": "zh",
             "theme": "light",
             "max_threads": 2,
             "supported_formats": [".mp4", ".avi", ".mkv", ".mov", ".flv"],
-            "transcriber": "funasr",
+            "transcriber": "whisper",
             "minimize_to_tray": True,
         }
 
@@ -23,6 +34,7 @@ class Config:
 
         # 加载配置
         self.config = self.load_config()
+        self._initialized = True
 
     def load_config(self):
         """加载配置文件"""
@@ -51,3 +63,7 @@ class Config:
         """设置配置项"""
         self.config[key] = value
         self.save_config()
+
+    def reload(self):
+        """重新加载配置"""
+        self.config = self.load_config()

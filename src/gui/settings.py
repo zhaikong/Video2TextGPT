@@ -22,6 +22,16 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
+        # 转写引擎选择
+        engine_layout = QHBoxLayout()
+        engine_label = QLabel("转写引擎:")
+        self.engine_combo = QComboBox()
+        self.engine_combo.addItems(["whisper", "funasr"])
+        self.engine_combo.setCurrentText(self.config.get("transcriber", "whisper"))
+        engine_layout.addWidget(engine_label)
+        engine_layout.addWidget(self.engine_combo)
+        layout.addLayout(engine_layout)
+
         # Whisper模型选择
         model_layout = QHBoxLayout()
         model_label = QLabel("Whisper模型:")
@@ -41,6 +51,16 @@ class SettingsDialog(QDialog):
         lang_layout.addWidget(lang_label)
         lang_layout.addWidget(self.lang_combo)
         layout.addLayout(lang_layout)
+
+        # 主题选择
+        theme_layout = QHBoxLayout()
+        theme_label = QLabel("界面主题:")
+        self.theme_combo = QComboBox()
+        self.theme_combo.addItems(["light", "dark"])
+        self.theme_combo.setCurrentText(self.config.get("theme", "light"))
+        theme_layout.addWidget(theme_label)
+        theme_layout.addWidget(self.theme_combo)
+        layout.addLayout(theme_layout)
 
         # 最大线程数
         thread_layout = QHBoxLayout()
@@ -68,11 +88,23 @@ class SettingsDialog(QDialog):
         # 连接信号
         save_btn.clicked.connect(self.save_settings)
         cancel_btn.clicked.connect(self.reject)
+        # 当转写引擎变化时更新UI状态
+        self.engine_combo.currentTextChanged.connect(self.update_ui_state)
+        # 初始化UI状态
+        self.update_ui_state(self.engine_combo.currentText())
+
+    def update_ui_state(self, engine):
+        """根据选择的转写引擎更新UI状态"""
+        # 只有选择whisper时，才启用whisper相关设置
+        is_whisper = engine == "whisper"
+        self.model_combo.setEnabled(is_whisper)
 
     def save_settings(self):
         """保存设置"""
+        self.config.set("transcriber", self.engine_combo.currentText())
         self.config.set("whisper_model", self.model_combo.currentText())
         self.config.set("language", self.lang_combo.currentText())
+        self.config.set("theme", self.theme_combo.currentText())
         self.config.set("max_threads", self.thread_spin.value())
         self.config.set("minimize_to_tray", self.tray_check.isChecked())
         self.accept()

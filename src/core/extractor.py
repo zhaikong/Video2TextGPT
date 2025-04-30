@@ -7,6 +7,7 @@ except ImportError:
 import os
 from typing import Callable
 from proglog import ProgressBarLogger
+from ..utils.config import Config
 
 
 class MyLogger(ProgressBarLogger):
@@ -25,7 +26,9 @@ class MyLogger(ProgressBarLogger):
 
 class AudioExtractor:
     def __init__(self):
-        self.supported_formats = [".mp4", ".avi", ".mkv", ".mov", ".flv"]
+        # 从配置获取支持的格式
+        config = Config()
+        self.supported_formats = config.get("supported_formats", [".mp4", ".avi", ".mkv", ".mov", ".flv"])
 
     def extract(
         self, video_path: str, progress_callback: Callable[[int], None] = None

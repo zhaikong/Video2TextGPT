@@ -1,47 +1,43 @@
-# VideoText Converter
+# Video2TextGPT
 
-一个基于 PyQt6 的视频转文字桌面应用，支持批量将视频转换为文本文档。
+一个基于 PyQt6 的视频转文字工具，支持批量将视频转换为带时间戳的文本文档。
 
 ## 功能特点
 
-- 支持批量导入视频文件
+- 支持批量导入视频文件和文件夹
 - 支持拖拽文件到界面
 - 支持主流视频格式(mp4, avi, mkv等)
-- 显示转换进度和状态
+- 实时显示转换进度和状态
 - 深色/浅色主题切换
 - 系统托盘支持
 - 可配置的转换参数
+- 生成带时间戳和纯文本双格式输出
+
+## 技术依赖
+
+项目使用以下关键组件：
+
+- **[Whisper](https://github.com/openai/whisper)** - OpenAI开发的多语言语音识别模型，支持多种语言的转写
+- **[FunASR](https://github.com/alibaba-damo-academy/FunASR)** - 达摩院开源的语音识别模型，专为中文优化
+- **[MoviePy](https://github.com/Zulko/moviepy)** - 视频处理库，用于提取音频
+- **[PyQt6](https://www.riverbankcomputing.com/software/pyqt/)** - 界面框架
 
 ## 系统要求
 
-- Python 3.8+
-- FFmpeg
+- FFmpeg (用于音频处理)
 - CUDA (可选，用于GPU加速)
 
 ## 安装部署
 
 1. 克隆仓库
 ```bash
-git clone https://github.com/yourusername/videotext-converter.git
-cd videotext-converter
+git clone https://github.com/NanmiCoder/Video2TextGPT.git
+cd Video2TextGPT
 ```
 
-2. 创建虚拟环境
-```bash
-python -m venv venv
 
-# Windows
-venv\Scripts\activate
-# Linux/macOS
-source venv/bin/activate
-```
 
-3. 安装依赖
-```bash
-pip install -r requirements.txt
-```
-
-4. 安装 FFmpeg
+3. 安装 FFmpeg (如果未安装)
 
 Windows:
 ```bash
@@ -59,43 +55,40 @@ sudo apt update
 sudo apt install ffmpeg
 ```
 
+
+
 ## 使用说明
 
 1. 启动应用
+> 需要先安装 [uv](https://docs.astral.sh/uv/getting-started/installation/) 包管理工具
 ```bash
-python src/main.py
+uv run src/main.py
 ```
 
-2. 添加视频文件
+1. 添加视频文件
    - 点击"选择文件"按钮选择单个或多个视频文件
    - 点击"选择目录"按钮选择包含视频的文件夹
    - 直接将文件拖拽到应用窗口
 
-3. 开始转换
+2. 开始转换
    - 点击"开始转换"按钮开始处理
    - 可以随时暂停/继续/取消转换
    - 转换完成的文件将保存在配置的输出目录中
 
-4. 设置选项
+3. 配置选项
+   - 转写引擎选择：Whisper 或 FunASR
    - Whisper模型选择(tiny/base/small/medium/large)
    - 识别语言设置
-   - 最大线程数
+   - 界面主题设置
    - 输出目录设置
-   - 主题切换
    - 系统托盘设置
 
 ## 项目结构
 
 ```
-videotext_converter/
+Video2TextGPT/
 ├── src/                    # 源代码目录
 │   ├── gui/               # 图形界面相关
-│   │   ├── main_window.py # 主窗口
-│   │   ├── file_list.py   # 文件列表组件
-│   │   ├── progress.py    # 进度展示组件
-│   │   ├── status.py      # 状态展示组件
-│   │   ├── theme.py       # 主题管理
-│   │   └── settings.py    # 设置对话框
 │   ├── core/              # 核心功能
 │   │   ├── converter.py   # 转换管理
 │   │   ├── extractor.py   # 音频提取
@@ -105,50 +98,17 @@ videotext_converter/
 │       └── logger.py      # 日志管理
 ```
 
-## 技术架构
+## 输出格式
 
-1. GUI层
-   - 使用PyQt6构建用户界面
-   - 采用组件化设计，将功能模块分离
-   - 实现了深色/浅色主题支持
-   - 使用信号槽机制处理事件
+生成的文档包含以下内容：
 
-2. 核心层
-   - 使用moviepy处理视频提取音频
-   - 使用whisper进行语音识别
-   - 多线程处理避免界面卡顿
-   - 队列管理任务处理
-
-3. 工具层
-   - 配置管理支持JSON持久化
-   - 日志系统记录运行状态
-   - 异常处理机制
+1. 视频基本信息：文件名、创建时间、视频时长
+2. 转写文本（带时间戳）：格式为 `[HH:MM:SS.SS --> HH:MM:SS.SS] 文本内容`
+3. 纯文本版本：去除时间戳的纯文本，方便阅读和编辑
 
 ## 配置文件
 
-配置文件位于 `~/.videotext/config.json`:
-
-```json
-{
-    "output_dir": "~/Documents/VideoText",
-    "whisper_model": "base",
-    "language": "zh",
-    "theme": "light",
-    "max_threads": 2,
-    "supported_formats": [".mp4", ".avi", ".mkv", ".mov", ".flv"]
-}
-```
-
-## 日志文件
-
-日志文件位于 `~/.videotext/logs/videotext.log`
-
-## 贡献指南
-
-1. Fork 项目
-2. 创建特性分支
-3. 提交改动
-4. 发起 Pull Request
+配置文件位于 `~/.videotext/config.json`
 
 ## 许可证
 
